@@ -1,4 +1,5 @@
 use crate::request::RequestOutput;
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -23,7 +24,7 @@ pub struct OutputToProcess {
     pub concurrent_requests: u64,
 }
 
-pub fn parse_results(results: Vec<Vec<Vec<OutputToProcess>>>) -> Vec<Output> {
+pub fn parse_results(results: Vec<Vec<Vec<OutputToProcess>>>) -> Result<Vec<Output>> {
     let mut output: Vec<Output> = Vec::new();
     for res in results.iter() {
         let average_response_time = res
@@ -61,5 +62,5 @@ pub fn parse_results(results: Vec<Vec<Vec<OutputToProcess>>>) -> Vec<Output> {
             max_response_time,
         })
     }
-    output
+    Ok(output)
 }

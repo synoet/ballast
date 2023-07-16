@@ -3,21 +3,24 @@ mod output;
 mod request;
 mod snapshot;
 mod ui;
+use anyhow::{Result, Context};
 use config::Config;
 use console::{Style, Term};
 use futures::future::join_all;
 use output::{parse_results, OutputToProcess};
 use request::TimedRequest;
+use reqwest::Client;
 use snapshot::Snapshot;
 use tokio;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
     let term = Term::stdout();
     let yellow = Style::new().yellow().bold();
     let green = Style::new().green().bold();
     let white = Style::new().white().bold();
-    let config: Config = Config::from_config_file("./ballast.toml".to_string())?;
+    let config: Config = Config::from_config_file("./ballast.toml")?;
+    let client: Client = Client::new();
 
     term.write_line(&format!(
         "{} configuration file from {}",
@@ -42,7 +45,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let endpoint_url = endpoint.url.clone();
 
             for _ in 0..endpoint.concurrent_requests {
-                let request = TimedRequest::from_config(&endpoint).await.request;
+                let request = TimedRequest::from_config(&client, &endpoint)
+                    .await
+                    .unwrap()
+                    .request;
                 requests_in_cycle.push(request);
             }
 
@@ -83,7 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         all_results.push(endpoint_results);
     }
 
-    let outputs = parse_results(all_results);
+    let outputs = parse_results(all_results).unwrap();
     let latest = Snapshot::latest();
 
     term.write_line("").ok();
@@ -92,6 +98,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for output in outputs.iter() {
         let corresponding_latest = latest
+            .as_ref()
+            .unwrap()
             .as_ref()
             .unwrap()
             .outputs
@@ -130,8 +138,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     term.write_line(&format!("{} to snapshot file", yellow.apply_to("Writing")))
         .ok();
-    let snapshot = Snapshot::new(outputs);
-    snapshot.write();
+    let snapshot = Snapshot::new(outputs).context("Failed to create snapshot")?;
+    snapshot.write().context("Failed to write snapshot")?;
     term.clear_last_lines(1).ok();
     term.write_line(&format!(
         "{} to snapshot file (./.ballast_snapshot.json)",

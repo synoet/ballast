@@ -1,4 +1,5 @@
 use crate::config::EndpointConfig;
+use anyhow::Result;
 use futures::Future;
 use reqwest::Client;
 use std::pin::Pin;
@@ -15,16 +16,16 @@ pub struct TimedRequest {
 }
 
 impl TimedRequest {
-    pub async fn from_config(config: &EndpointConfig) -> Self {
-        let client = Client::new();
-
+    pub async fn from_config(client: &Client, config: &EndpointConfig) -> Result<Self> {
         let mut base_request = match config.method.as_str() {
             "GET" => client.get(&config.url),
             "POST" => client.post(&config.url),
             "PUT" => client.put(&config.url),
             "DELETE" => client.delete(&config.url),
             "HEAD" => client.head(&config.url),
-            _ => panic!("Invalid method"),
+            _ => {
+                return Err(anyhow::anyhow!("Invalid HTTP method: {}", config.method));
+            }
         };
 
         if let Some(headers) = &config.headers {
@@ -45,12 +46,15 @@ impl TimedRequest {
             RequestOutput {
                 duration,
                 success: response.is_ok(),
-                status: response.as_ref().map(|r| r.status().as_u16()).unwrap_or(0),
+                status: response
+                    .as_ref()
+                    .map(|r| r.status().as_u16())
+                    .unwrap_or(200),
             }
         };
 
-        return TimedRequest {
+        return Ok(TimedRequest {
             request: Box::pin(request),
-        };
+        });
     }
 }

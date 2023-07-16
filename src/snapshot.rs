@@ -1,4 +1,5 @@
 use crate::output::Output;
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -11,46 +12,44 @@ pub struct Snapshot {
 }
 
 impl Snapshot {
-    pub fn new(outputs: Vec<Output>) -> Self {
+    pub fn new(outputs: Vec<Output>) -> Result<Self> {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .expect("Failed to get timestamp")
+            .context("Failed to get timestamp")?
             .as_secs();
 
-        Self { outputs, timestamp }
+        Ok(Self { outputs, timestamp })
     }
 
-    pub fn read() -> Vec<Snapshot> {
+    pub fn read() -> Result<Vec<Snapshot>> {
         let snapshots: Vec<Snapshot> = match std::fs::read_to_string(SNAPSHOT_PATH) {
-            Ok(s) => serde_json::from_str(&s).unwrap(),
+            Ok(s) => serde_json::from_str(&s).context("Failed to parse .ballast_snapshot.json, where changes manually added?")?,
             Err(_) => Vec::new(),
         };
 
-        return snapshots;
+        return Ok(snapshots);
     }
 
-    pub fn write(&self) {
-        let mut snapshots: Vec<Snapshot> = match std::fs::read_to_string(SNAPSHOT_PATH) {
-            Ok(s) => serde_json::from_str(&s).unwrap(),
-            Err(_) => Vec::new(),
-        };
+    pub fn write(&self) -> Result<()> {
+        let mut snapshots = Self::read()?;
         snapshots.push(self.clone());
-        let snapshot_json = serde_json::to_string(&snapshots).unwrap();
-        std::fs::write(SNAPSHOT_PATH, snapshot_json).unwrap();
+        let snapshot_json = serde_json::to_string(&snapshots)
+            .context("Failed to parse .ballast_snapshot.json, where changes manually added?")?;
+        std::fs::write(SNAPSHOT_PATH, snapshot_json)
+            .context("Failed to write to .ballast_snapshot.json")?;
+
+        Ok(())
     }
 
-    pub fn latest() -> Option<Self> {
-        let mut snapshots: Vec<Snapshot> = match std::fs::read_to_string(SNAPSHOT_PATH) {
-            Ok(s) => serde_json::from_str(&s).unwrap(),
-            Err(_) => Vec::new(),
-        };
+    pub fn latest() -> Result<Option<Self>> {
+        let mut snapshots = Self::read()?;
 
         if snapshots.len() == 0 {
-            return None;
+            return Ok(None);
         }
 
         snapshots.sort_by_key(|s| s.timestamp);
 
-        return Some(snapshots.last().unwrap().clone());
+        Ok(Some(snapshots.last().unwrap().clone()))
     }
 }
