@@ -11,7 +11,6 @@ use request::TimedRequest;
 use snapshot::Snapshot;
 use tokio;
 
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let term = Term::stdout();
@@ -31,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     for endpoint in config.endpoints {
         term.write_line(&format!(
             "{} loads for endpoint {}",
-            green.apply_to("Starting"),
+            yellow.apply_to("Running"),
             white.apply_to(endpoint.name.clone())
         ))
         .ok();
@@ -48,19 +47,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
 
             if idx < endpoint.cycles - 1 {
-                ui::print_endpoint_in_progress(
-                    &term,
-                    &endpoint.url,
-                    endpoint.cycles,
-                    idx
-                )
+                ui::print_endpoint_in_progress(&term, &endpoint.url, endpoint.cycles, idx)
             }
             if idx == endpoint.cycles - 1 {
-                ui::print_endpoint_finished(
-                    &term,
-                    endpoint.cycles,
-                    &endpoint.url,
-                )
+                term.clear_last_lines(2).ok();
+                term.write_line(&format!(
+                    "{} loads for endpoint {}",
+                    green.apply_to("Finished"),
+                    white.apply_to(endpoint.name.clone())
+                ))
+                .ok();
+                ui::print_endpoint_finished(&term, endpoint.cycles, &endpoint.url)
             }
 
             endpoint_results.push(
@@ -82,6 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .await,
             );
         }
+
         all_results.push(endpoint_results);
     }
 
@@ -134,6 +132,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .ok();
     let snapshot = Snapshot::new(outputs);
     snapshot.write();
+    term.clear_last_lines(1).ok();
     term.write_line(&format!(
         "{} to snapshot file (./.ballast_snapshot.json)",
         green.apply_to("Wrote")

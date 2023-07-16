@@ -74,7 +74,8 @@ pub fn print_endpoint_in_progress(term: &Term, url: &str, total_cycles: u64, cou
     let spinner_frames = vec!["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     term.write_line(&format!(
         "  {} Cycle [{}/{}] for {}",
-        get_color(Color::Yellow, None).apply_to(spinner_frames[counter as usize % spinner_frames.len()]),
+        get_color(Color::Yellow, None)
+            .apply_to(spinner_frames[counter as usize % spinner_frames.len()]),
         counter + 1,
         total_cycles,
         get_color(Color::White, None).apply_to(url)
@@ -83,13 +84,12 @@ pub fn print_endpoint_in_progress(term: &Term, url: &str, total_cycles: u64, cou
 }
 
 pub fn print_endpoint_finished(term: &Term, total_cycles: u64, url: &str) {
-    term.clear_last_lines(1).ok();
-        term.write_line(&format!(
-            "  {} Cycle [{}/{}] for {}",
-            get_color(Color::Green, None).apply_to("✓"),
-            total_cycles,
-            total_cycles,
-            get_color(Color::White, None).apply_to(url)
-        ))
-        .ok();
+    term.write_line(&format!(
+        "  {} Cycle [{}/{}] for {}",
+        get_color(Color::Green, None).apply_to("✓"),
+        total_cycles,
+        total_cycles,
+        get_color(Color::White, None).apply_to(url)
+    ))
+    .ok();
 }
