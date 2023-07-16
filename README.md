@@ -26,3 +26,9 @@ expected_status = 200
 Ballast will run your configured load tests from the config and save the results in a snapshot file.
 The next time you run the load test, you can compare different performance metrics of your api.
 
+## TODO
+- [ ] Add support for injecting environment vars into ballast.toml
+- [ ] Add metric / graph for performance over time given concurrent requests
+- [ ] Support query parameters 
+- [ ] Support variable inputs from a list for body / parameters
+
