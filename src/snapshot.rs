@@ -23,7 +23,8 @@ impl Snapshot {
 
     pub fn read() -> Result<Vec<Snapshot>> {
         let snapshots: Vec<Snapshot> = match std::fs::read_to_string(SNAPSHOT_PATH) {
-            Ok(s) => serde_json::from_str(&s).context("Failed to parse .ballast_snapshot.json, where changes manually added?")?,
+            Ok(s) => serde_json::from_str(&s)
+                .context("Failed to parse .ballast_snapshot.json, where changes manually added?")?,
             Err(_) => Vec::new(),
         };
 

@@ -3,7 +3,8 @@ mod output;
 mod request;
 mod snapshot;
 mod ui;
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
+use clap::Parser;
 use config::Config;
 use console::{Style, Term};
 use futures::future::join_all;
@@ -13,6 +14,12 @@ use reqwest::Client;
 use snapshot::Snapshot;
 use tokio;
 
+#[derive(Parser)]
+struct Args {
+    #[arg(long = "no-snapshot", required = false)]
+    no_snapshot: bool,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let term = Term::stdout();
@@ -21,6 +28,8 @@ async fn main() -> Result<()> {
     let white = Style::new().white().bold();
     let config: Config = Config::from_config_file("./ballast.toml")?;
     let client: Client = Client::new();
+
+    let matches = Args::parse();
 
     term.write_line(&format!(
         "{} configuration file from {}",
@@ -136,15 +145,26 @@ async fn main() -> Result<()> {
         term.write_line("").ok();
     }
 
-    term.write_line(&format!("{} to snapshot file", yellow.apply_to("Writing")))
+    if matches.no_snapshot {
+        term.write_line(&format!(
+            "{} to snapshot file (./.ballast_snapshot.json)",
+            green.apply_to("Skipped writing")
+        ))
         .ok();
-    let snapshot = Snapshot::new(outputs).context("Failed to create snapshot")?;
-    snapshot.write().context("Failed to write snapshot")?;
-    term.clear_last_lines(1).ok();
-    term.write_line(&format!(
-        "{} to snapshot file (./.ballast_snapshot.json)",
-        green.apply_to("Wrote")
-    ))
-    .ok();
+        return Ok(());
+    } else {
+        term.write_line(&format!("{} to snapshot file", yellow.apply_to("Writing")))
+            .ok();
+
+        let snapshot = Snapshot::new(outputs).context("Failed to create snapshot")?;
+        snapshot.write().context("Failed to write snapshot")?;
+        term.clear_last_lines(1).ok();
+        term.write_line(&format!(
+            "{} to snapshot file (./.ballast_snapshot.json)",
+            green.apply_to("Wrote")
+        ))
+        .ok();
+    }
+
     Ok(())
 }
