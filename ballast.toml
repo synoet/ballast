@@ -1,0 +1,15 @@
+[[endpoints]]
+name = "Endpoint 1"
+url = "https://www.google.com"
+method = "GET"
+concurrent_requests = 5
+cycles = 20
+
+[[endpoints]]
+name = "Endpoint 2"
+url = "https://www.duckduckgo.com"
+headers = { "Accept" = "application/json" }
+method = "GET"
+concurrent_requests = 5
+cycles = 20
+
