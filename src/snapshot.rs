@@ -1,4 +1,3 @@
-use crate::output::Output;
 use crate::process::Test;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};

@@ -1,4 +1,5 @@
 use console::{Style, Term};
+use crate::process::Test;
 
 enum Color {
     White,
@@ -93,3 +94,4 @@ pub fn print_endpoint_finished(term: &Term, total_cycles: u64, url: &str) {
     ))
     .ok();
 }
+
