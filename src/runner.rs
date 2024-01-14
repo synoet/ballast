@@ -1,5 +1,5 @@
-use futures::future::join_all;
 use anyhow::Result;
+use futures::future::join_all;
 use std::vec;
 
 use crate::config::Config;
@@ -10,10 +10,10 @@ pub struct Runner {
     client: reqwest::Client,
 }
 
-type SingleCycle = Vec<RequestOutput>;
+pub type SingleCycle = Vec<RequestOutput>;
 
 #[derive(Debug)]
-pub struct SingleTest {
+pub struct SingleLoad {
     pub cycles: Vec<SingleCycle>,
     pub num_cycles: u64,
     pub num_concurrent_requests: u64,
@@ -21,14 +21,16 @@ pub struct SingleTest {
     pub endpoint_url: String,
 }
 
+pub type Loads = Vec<SingleLoad>;
+
 impl Runner {
     pub fn new(config: Config) -> Self {
         let client = reqwest::Client::new();
         Self { config, client }
     }
 
-    pub async fn run(&self) -> Result<Vec<SingleTest>> {
-        let mut all_tests: Vec<SingleTest> = vec![];
+    pub async fn run(&self) -> Result<Loads> {
+        let mut loads: Loads = vec![];
         for endpoint in &self.config.endpoints {
             let num_cycles = endpoint.cycles.clone();
             let num_concurrent_requests = endpoint.concurrent_requests.clone();
@@ -63,7 +65,7 @@ impl Runner {
                 })
                 .collect::<Vec<_>>();
 
-            all_tests.push(SingleTest {
+            loads.push(SingleLoad {
                 cycles: results,
                 num_cycles,
                 num_concurrent_requests,
@@ -72,6 +74,6 @@ impl Runner {
             })
         }
 
-        Ok(all_tests)
+        Ok(loads)
     }
 }

@@ -1,4 +1,5 @@
 use crate::output::Output;
+use crate::process::Test;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -7,18 +8,18 @@ const SNAPSHOT_PATH: &str = "./.ballast_snapshot.json";
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Snapshot {
-    pub outputs: Vec<Output>,
+    pub tests: Vec<Test>,
     pub timestamp: u64,
 }
 
 impl Snapshot {
-    pub fn new(outputs: Vec<Output>) -> Result<Self> {
+    pub fn new(tests: Vec<Test>) -> Result<Self> {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .context("Failed to get timestamp")?
             .as_secs();
 
-        Ok(Self { outputs, timestamp })
+        Ok(Self { tests, timestamp })
     }
 
     pub fn read() -> Result<Vec<Snapshot>> {
