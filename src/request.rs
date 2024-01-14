@@ -1,14 +1,17 @@
-use crate::config::EndpointConfig;
+use crate::config::{EndpointConfig, Method};
 use anyhow::Result;
 use futures::Future;
 use reqwest::Client;
-use std::pin::Pin;
+use serde_json::Value;
+use std::{collections::HashMap, pin::Pin};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RequestOutput {
     pub duration: u128,
     pub success: bool,
     pub status: u16,
+    pub response_body: Option<Value>,
+    pub response_headers: Option<HashMap<String, String>>,
 }
 
 pub struct TimedRequest {
@@ -16,13 +19,13 @@ pub struct TimedRequest {
 }
 
 impl TimedRequest {
-    pub async fn from_config(client: &Client, config: &EndpointConfig) -> Result<Self> {
-        let mut base_request = match config.method.as_str() {
-            "GET" => client.get(&config.url),
-            "POST" => client.post(&config.url),
-            "PUT" => client.put(&config.url),
-            "DELETE" => client.delete(&config.url),
-            "HEAD" => client.head(&config.url),
+    pub fn from_config(client: &Client, config: &EndpointConfig) -> Result<Self> {
+        let mut base_request = match config.method {
+            Method::Get => client.get(&config.url),
+            Method::Post => client.post(&config.url),
+            Method::Put => client.put(&config.url),
+            Method::Delete => client.delete(&config.url),
+            Method::Patch => client.patch(&config.url),
             _ => {
                 return Err(anyhow::anyhow!("Invalid HTTP method: {}", config.method));
             }
@@ -35,21 +38,41 @@ impl TimedRequest {
         }
 
         if let Some(body) = &config.body {
-            base_request = base_request.body(body.clone());
+            base_request = base_request.body(body.to_string());
         }
 
         let request = async move {
             let start = std::time::Instant::now();
             let response = base_request.send().await;
             let duration = start.elapsed().as_millis();
-
-            RequestOutput {
-                duration,
-                success: response.is_ok(),
-                status: response
-                    .as_ref()
-                    .map(|r| r.status().as_u16())
-                    .unwrap_or(200),
+            match response {
+                Ok(r) => {
+                    let status = r.status().as_u16();
+                    let headers: Option<HashMap<String, String>> =
+                        match r.headers().iter().count() > 0 {
+                            true => {
+                                Some(HashMap::from_iter(r.headers().iter().map(|(k, v)| {
+                                    (k.to_string(), v.to_str().unwrap().to_string())
+                                })))
+                            }
+                            false => None,
+                        };
+                    let json: Option<Value> = r.json().await.unwrap_or(None);
+                    RequestOutput {
+                        duration,
+                        success: true,
+                        status,
+                        response_body: json,
+                        response_headers: headers,
+                    }
+                }
+                Err(_e) => RequestOutput {
+                    duration,
+                    success: false,
+                    status: 0,
+                    response_body: None,
+                    response_headers: None,
+                },
             }
         };
 
