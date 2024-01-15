@@ -72,42 +72,36 @@ impl Printer {
         self
     }
 
-    pub fn print(&self, message: &str) -> &Self {
-        let _res = self.term.write_line(&format!(
-            "{}",
-            get_color(Color::White, None).apply_to(message)
-        ));
-        self
-    }
-
-    pub fn print_lines(&self, lines: &Vec<String>, indent: i8) -> &Self {
-        for line in lines {
-            let _res = self.term.write_line(&format!(
-                "{}{}",
-                " ".repeat(indent as usize),
-                get_color(Color::White, None).apply_to(line)
-            ));
+    pub fn print_stat(&self, title: &str, val: f64, diff: Option<f64>, unit: &str) -> &Self {
+        match diff {
+            Some(diff) => {
+                let diff_color = match diff > 0.0 {
+                    true => Color::Red,
+                    false => Color::Green,
+                };
+                let _res = self.term.write_line(&format!(
+                    "{}{}: {} {}",
+                    " ".repeat(4),
+                    get_color(Color::White, None).apply_to(title),
+                    get_color(Color::White, None).apply_to(val),
+                    get_color(diff_color, None).apply_to(format!(
+                        "({}{}{})",
+                        get_sign_string(diff),
+                        diff,
+                        unit
+                    ))
+                ));
+            },
+            None => {
+                let _res = self.term.write_line(&format!(
+                    "{}{}: {} {}",
+                    " ".repeat(4),
+                    get_color(Color::White, None).apply_to(title),
+                    get_color(Color::White, None).apply_to(val),
+                    get_color(Color::White, None).apply_to(unit)
+                ));
+            }
         }
-        self
-    }
-
-    pub fn print_stat(&self, title: &str, val: f64, diff: f64, unit: &str) -> &Self {
-        let diff_color = match diff > 0.0 {
-            true => Color::Red,
-            false => Color::Green,
-        };
-        let _res = self.term.write_line(&format!(
-            "{}{}: {} {}",
-            " ".repeat(4),
-            get_color(Color::White, None).apply_to(title),
-            get_color(Color::White, None).apply_to(val),
-            get_color(diff_color, None).apply_to(format!(
-                "({}{}{})",
-                get_sign_string(diff),
-                diff,
-                unit
-            ))
-        ));
 
         self
     }

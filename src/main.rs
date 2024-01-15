@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
     let config: Config = Config::from_config_file("./ballast.json")?;
     printer.print_with_green(
         "Loaded",
-        &format!("config with {} tests", config.endpoints.len()),
+        &format!("config with {} tests from ./ballast.json", config.endpoints.len()),
         0,
     );
     let runner = Runner::new(config.clone());

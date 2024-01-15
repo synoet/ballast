@@ -105,19 +105,28 @@ pub fn compare_tests(
             .print_stat(
                 "Avg response time",
                 test.stats.average_response_time,
-                test.stats.average_response_time - other.unwrap().stats.average_response_time,
+                match other {
+                    Some(other) => Some(test.stats.average_response_time - other.stats.average_response_time),
+                    None => None,
+                },
                 "ms",
             )
             .print_stat(
                 "Max response time",
                 test.stats.max_response_time,
-                test.stats.max_response_time - other.unwrap().stats.max_response_time,
+                match other {
+                    Some(other) => Some(test.stats.max_response_time - other.stats.max_response_time),
+                    None => None,
+                },
                 "ms",
             )
             .print_stat(
                 "Min response time",
                 test.stats.min_response_time,
-                test.stats.min_response_time - other.unwrap().stats.min_response_time,
+                match other {
+                    Some(other) => Some(test.stats.min_response_time - other.stats.min_response_time),
+                    None => None,
+                },
                 "ms",
             );
     }
