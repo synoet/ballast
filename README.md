@@ -1,4 +1,4 @@
-# Ballast  
+# ⚓ Ballast  
 Ballast is a tool for snapshot load testing apis.
 
 **What is snapshot testing?**
