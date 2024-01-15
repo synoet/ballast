@@ -4,6 +4,7 @@ use std::vec;
 
 use crate::config::Config;
 use crate::request::{RequestOutput, TimedRequest};
+use crate::printer::Printer;
 
 pub struct Runner {
     config: Config,
@@ -29,9 +30,14 @@ impl Runner {
         Self { config, client }
     }
 
-    pub async fn run(&self) -> Result<Loads> {
+    pub async fn run(&self, printer: &Printer) -> Result<Loads> {
         let mut loads: Loads = vec![];
         for endpoint in &self.config.endpoints {
+            printer.print_with_yellow(
+                "Running",
+                &format!("load for {}", endpoint.name),
+                4,
+            );
             let num_cycles = endpoint.cycles.clone();
             let num_concurrent_requests = endpoint.concurrent_requests.clone();
 
@@ -54,7 +60,7 @@ impl Runner {
                 .map(|cycle| join_all(cycle.into_iter().map(|req| req)))
                 .collect::<Vec<_>>();
 
-            let results = join_all(cycles)
+            let results = join_all(cycles.into_iter().map(|cycle| cycle))
                 .await
                 .into_iter()
                 .map(|cycle_results| {
@@ -71,7 +77,14 @@ impl Runner {
                 num_concurrent_requests,
                 endpoint_name: endpoint.name.clone(),
                 endpoint_url: endpoint.url.clone(),
-            })
+            });
+
+            printer.clear_previous();
+            printer.print_with_green(
+                "Finished",
+                &format!("load for {}", endpoint.name),
+                4,
+            );
         }
 
         Ok(loads)
