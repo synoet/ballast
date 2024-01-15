@@ -1,20 +1,20 @@
+mod compare;
 mod config;
+mod printer;
 mod process;
 mod request;
 mod runner;
-mod printer;
 mod snapshot;
-mod compare;
 use anyhow::Result;
 use clap::Parser;
+use compare::compare_tests;
 use config::Config;
 use console::Term;
-use tokio;
+use printer::Printer;
 use process::process;
 use runner::Runner;
 use snapshot::Snapshot;
-use printer::Printer;
-use compare::compare_tests;
+use tokio;
 
 #[derive(Parser)]
 struct Args {
@@ -31,39 +31,42 @@ async fn main() -> Result<()> {
     printer.print_with_green(
         "Loaded",
         &format!("config with {} tests", config.endpoints.len()),
-        0, 
+        0,
     );
     let runner = Runner::new(config.clone());
     let matches = Args::parse();
     let results = runner.run(&printer).await?;
     let latest_snapshot = Snapshot::latest()?;
-    printer
-        .blank_line()
-        .print_with_yellow(
-            "Processing",
-            &format!("{} tests", config.endpoints.len()),
-            0
-        );
+    printer.blank_line().print_with_yellow(
+        "Processing",
+        &format!("{} tests", config.endpoints.len()),
+        0,
+    );
     let processed_tests = process(&results, &config, latest_snapshot.as_ref());
-    printer
-        .clear_previous()
-        .print_with_green(
+    printer.clear_previous().print_with_green(
         "Processed",
         &format!("{} tests", config.endpoints.len()),
-        0
+        0,
     );
 
-    compare_tests(&processed_tests, &config, latest_snapshot.as_ref(), &printer);
+    compare_tests(
+        &processed_tests,
+        &config,
+        latest_snapshot.as_ref(),
+        &printer,
+    );
 
     if !matches.no_snapshot {
         Snapshot::new(processed_tests.clone()).unwrap().write()?;
-        printer
-            .blank_line()
-            .print_with_green(
-                "Saved",
-                &format!("snapshot with {} tests to {}", processed_tests.len(), "./.ballast_snapshot.json"),
-                0
-            );
+        printer.blank_line().print_with_green(
+            "Saved",
+            &format!(
+                "snapshot with {} tests to {}",
+                processed_tests.len(),
+                "./.ballast_snapshot.json"
+            ),
+            0,
+        );
     }
 
     Ok(())

@@ -3,8 +3,8 @@ use futures::future::join_all;
 use std::vec;
 
 use crate::config::Config;
-use crate::request::{RequestOutput, TimedRequest};
 use crate::printer::Printer;
+use crate::request::{RequestOutput, TimedRequest};
 
 pub struct Runner {
     config: Config,
@@ -33,11 +33,7 @@ impl Runner {
     pub async fn run(&self, printer: &Printer) -> Result<Loads> {
         let mut loads: Loads = vec![];
         for endpoint in &self.config.endpoints {
-            printer.print_with_yellow(
-                "Running",
-                &format!("load for {}", endpoint.name),
-                4,
-            );
+            printer.print_with_yellow("Running", &format!("load for {}", endpoint.name), 4);
             let num_cycles = endpoint.cycles.clone();
             let num_concurrent_requests = endpoint.concurrent_requests.clone();
 
@@ -80,11 +76,7 @@ impl Runner {
             });
 
             printer.clear_previous();
-            printer.print_with_green(
-                "Finished",
-                &format!("load for {}", endpoint.name),
-                4,
-            );
+            printer.print_with_green("Finished", &format!("load for {}", endpoint.name), 4);
         }
 
         Ok(loads)

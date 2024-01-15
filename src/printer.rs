@@ -1,5 +1,5 @@
-use console::{Style, Term};
 use crate::process::Test;
+use console::{Style, Term};
 
 enum Color {
     White,
@@ -37,7 +37,6 @@ pub struct Printer {
 }
 
 impl Printer {
-
     pub fn new(term: Term) -> Self {
         Self { term }
     }
@@ -92,6 +91,27 @@ impl Printer {
         self
     }
 
+    pub fn print_stat(&self, title: &str, val: f64, diff: f64, unit: &str) -> &Self {
+        let diff_color = match diff > 0.0 {
+            true => Color::Red,
+            false => Color::Green,
+        };
+        let _res = self.term.write_line(&format!(
+            "{}{}: {} {}",
+            " ".repeat(4),
+            get_color(Color::White, None).apply_to(title),
+            get_color(Color::White, None).apply_to(val),
+            get_color(diff_color, None).apply_to(format!(
+                "({}{}{})",
+                get_sign_string(diff),
+                diff,
+                unit
+            ))
+        ));
+
+        self
+    }
+
     pub fn clear_previous(&self) -> &Self {
         self.term.clear_last_lines(1).ok();
         self
@@ -101,5 +121,4 @@ impl Printer {
         self.term.write_line("").ok();
         self
     }
-
 }
