@@ -106,7 +106,9 @@ pub fn compare_tests(
                 "Avg response time",
                 test.stats.average_response_time,
                 match other {
-                    Some(other) => Some(test.stats.average_response_time - other.stats.average_response_time),
+                    Some(other) => {
+                        Some(test.stats.average_response_time - other.stats.average_response_time)
+                    }
                     None => None,
                 },
                 "ms",
@@ -115,7 +117,9 @@ pub fn compare_tests(
                 "Max response time",
                 test.stats.max_response_time,
                 match other {
-                    Some(other) => Some(test.stats.max_response_time - other.stats.max_response_time),
+                    Some(other) => {
+                        Some(test.stats.max_response_time - other.stats.max_response_time)
+                    }
                     None => None,
                 },
                 "ms",
@@ -124,7 +128,9 @@ pub fn compare_tests(
                 "Min response time",
                 test.stats.min_response_time,
                 match other {
-                    Some(other) => Some(test.stats.min_response_time - other.stats.min_response_time),
+                    Some(other) => {
+                        Some(test.stats.min_response_time - other.stats.min_response_time)
+                    }
                     None => None,
                 },
                 "ms",

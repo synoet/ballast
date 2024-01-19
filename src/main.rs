@@ -5,6 +5,7 @@ mod process;
 mod request;
 mod runner;
 mod snapshot;
+use anyhow::Context;
 use anyhow::Result;
 use clap::Parser;
 use compare::compare_tests;
@@ -14,6 +15,7 @@ use printer::Printer;
 use process::process;
 use runner::Runner;
 use snapshot::Snapshot;
+use std::fs;
 use tokio;
 
 #[derive(Parser)]
@@ -27,10 +29,27 @@ async fn main() -> Result<()> {
     let term = Term::stdout();
     let printer = Printer::new(term);
 
-    let config: Config = Config::from_config_file("./ballast.json")?;
+    match fs::metadata("./ballast.json") {
+        Ok(metadata) => metadata,
+        Err(_) => {
+            printer
+                .print_with_red(
+                    "ERROR",
+                    "No ballast.json file found in current directory (https://github.com/synoet/ballast/blob/main/README.md)",
+                    0,
+                );
+            return Ok(());
+        }
+    };
+
+    let config: Config = Config::from_config_file("./ballast.json")
+        .context("Failed to read ./ballast.json config file")?;
     printer.print_with_green(
         "Loaded",
-        &format!("config with {} tests from ./ballast.json", config.endpoints.len()),
+        &format!(
+            "config with {} tests from ./ballast.json",
+            config.endpoints.len()
+        ),
         0,
     );
     let runner = Runner::new(config.clone());
