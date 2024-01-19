@@ -156,8 +156,8 @@ pub fn process(loads: &Loads, config: &Config, snapshot: Option<&Snapshot>) -> V
                     .iter()
                     .find(|t| t.config.endpoint_name == load.endpoint_name)
                     .unwrap();
-                let within_threshold = latest_test.stats.average_response_time
-                    < stats.average_response_time + endpoint.threshold.unwrap_or(250) as f64;
+                let within_threshold = stats.average_response_time
+                    < latest_test.stats.average_response_time + endpoint.threshold.unwrap_or(250) as f64;
 
                 Test {
                     success: expected.passes() && within_threshold,
