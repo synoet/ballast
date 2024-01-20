@@ -90,8 +90,8 @@ impl Runner {
                 self.log_ramp(&endpoint).await?;
                 printer.clear_previous()
                     .print_with_green("Warmed", &format!("up {} with a logarithmic ramp", endpoint.name), 4);
-                printer.print_with_yellow("Running", &format!("load for {}", endpoint.name), 4);
             }
+            printer.print_with_yellow("Running", &format!("load for {}", endpoint.name), 4);
             let num_cycles = endpoint.cycles.clone();
             let num_concurrent_requests = endpoint.concurrent_requests.clone();
 

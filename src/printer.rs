@@ -1,4 +1,3 @@
-use crate::process::Test;
 use console::{Style, Term};
 
 enum Color {
@@ -68,15 +67,6 @@ impl Printer {
             " ".repeat(indent as usize),
             get_color(Color::Red, Some(TextStyle::Bold)).apply_to(title),
             get_color(Color::White, None).apply_to(description)
-        ));
-        self
-    }
-
-    pub fn print(&self, message: &str, indent: i8) -> &Self {
-        let _res = self.term.write_line(&format!(
-            "{}{}",
-            " ".repeat(indent as usize),
-            get_color(Color::White, None).apply_to(message)
         ));
         self
     }
