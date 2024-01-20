@@ -52,6 +52,7 @@ pub struct EndpointConfig {
     pub expected_body: Option<Value>,
     pub expected_headers: Option<HashMap<String, String>>,
     pub threshold: Option<u128>,
+    pub ramp: Option<bool>,
 }
 
 impl Config {

@@ -14,8 +14,10 @@ pub struct RequestOutput {
     pub response_headers: Option<HashMap<String, String>>,
 }
 
+pub type Request = Pin<Box<dyn Future<Output = RequestOutput> + Send>>;
+
 pub struct TimedRequest {
-    pub request: Pin<Box<dyn Future<Output = RequestOutput> + Send>>,
+    pub request: Request,
 }
 
 impl TimedRequest {
