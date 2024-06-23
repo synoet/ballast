@@ -27,7 +27,7 @@ Create a `ballast.json` config file in your directory.
       "expected_status": 500,
     },
     {
-      "name": "POSR test",
+      "name": "POST test",
       "url":"http://localhost:8080/test",
       "method": "POST",
       "concurrent_requests": 5,
