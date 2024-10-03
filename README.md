@@ -72,4 +72,4 @@ Applying a similar approach, when running a load test, ballast automatically gen
 `expected_status` *(optional)*: the status you're expecting the endpoint to return if it functions correctly   
 `expected_body` *(optional)*: the expected response for the endpoint   
 `expected_headers` *(optional)*: the expected response headers for the endpoint   
-`ramp` *(optional)*: wether or not we should ramp the request up (default true)
+`ramp` *(optional)*: whether or not we should ramp the request up (default true)
