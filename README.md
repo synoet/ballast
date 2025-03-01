@@ -24,7 +24,7 @@ Create a `ballast.json` config file in your directory.
       "concurrent_requests": 5,
       "cycles": 10,
       "threshold": 100,
-      "expected_status": 500,
+      "expected_status": 500
     },
     {
       "name": "POST test",
@@ -40,7 +40,7 @@ Create a `ballast.json` config file in your directory.
       "body": {
         "payload": {}
       }
-    },
+    }
   ]
 }
 ```
